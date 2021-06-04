@@ -21,9 +21,11 @@ import HighlightOffIcon from '@material-ui/icons/HighlightOff'
 
 
 const LightBox = props => {
+    const [validation, setValidation] = useState(false)
     const [el, setEl] = useState(props.location.state.img)
     const [comment, setComment] = useState('')
-    const [open, setOpen] = React.useState(true);
+    const [open, setOpen] = useState(false);
+    const [countComments, setCountComments] = useState(el.comments.length)
     const clickHandler = () => {
         setOpen(!open);
     }
@@ -36,7 +38,6 @@ const LightBox = props => {
 
     function stopPropagation(e){
         e.stopPropagation();
-        // e.nativeEvent.stopImmediatePropagation();
     }
     function likeHandler() {
         const elChange = {...el}
@@ -45,18 +46,25 @@ const LightBox = props => {
     }
     function commentHandler(e) {
         if (e.key === 'Enter') {
-            const elChange = {...el}
-            elChange.comments.push(e.target.value)
-            setEl(elChange)
-            setComment('')
+            if (e.target.value.length === 0) {
+                setValidation(true)
+            } else {
+                setValidation(false)
+                const elChange = {...el}
+                elChange.comments.push(e.target.value)
+                setEl(elChange)
+                setCountComments(el.comments.length)
+                setComment('')
+            }
+            
         }
     }
     function deleteCommentHandler(index) {
         const elChange = {...el}
         elChange.comments.splice(index,1)
-        // console.log(elChange.comments[index])
         if (window.confirm("Точно удалить комментарий?")) {
             setEl(elChange)
+            setCountComments(el.comments.length)
         }
     }
     return (
@@ -78,7 +86,6 @@ const LightBox = props => {
                 transform:' translate(-50%, -50%)',
                 
                 }}>
-            {/* <CardActionArea > */}
               <CardMedia
                 component="img"
                 alt="Contemplative Reptile"
@@ -87,7 +94,6 @@ const LightBox = props => {
                 title="Contemplative Reptile"
                 className="MuiGridListTile-imgFullHeight"
               />
-            {/* </CardActionArea> */}
             <CardActions style = {{
                 justifyContent: 'space-between',
                 alignItems: 'flex-start'
@@ -103,17 +109,16 @@ const LightBox = props => {
                 className={classes.root}
             >
                 <ListItem button onClick={clickHandler}>
-                    <ListItemIcon>
-                    <InboxIcon />
-                    </ListItemIcon>
+                        <ListItemIcon>
+                            <InboxIcon />
+                        </ListItemIcon>
                     <ListItemText primary="Комментарии" />
-                    {open ? <ExpandLess /> : <ExpandMore />}
+                    {countComments !== 0 ? (open ? <ExpandLess /> : <ExpandMore />): null}
                 </ListItem>
                 <Collapse  in={open} timeout="auto" unmountOnExit>
-                    {/* <List component="div" disablePadding> */}
                         {
                             
-                        (el && el.comments.length !== 0) ?     
+                        (el.comments.length !== 0) ?     
                             el.comments.map((comment, index)=>(
                                 <ListItem className={classes.nested}>
                                     <ListItemText primary={comment} />
@@ -135,7 +140,8 @@ const LightBox = props => {
                     label="Написать..." 
                     variant="filled" 
                     value = {comment}
-                    style = {{border: 'red'}}
+                    error = {validation}
+                    helperText={validation ? "Поле не может быть пустым": null}
                     onChange = {((e) => setComment(e.target.value))}
                     onKeyDown = {((e) => commentHandler(e))}
                 />

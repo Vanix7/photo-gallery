@@ -96,7 +96,6 @@ function App(props) {
                     pathname: '/' + img.id,
                     state: { img: img }
                   })}
-                  // className = {scssClasses.img}
                 />
               <GridListTileBar
                 actionIcon={
